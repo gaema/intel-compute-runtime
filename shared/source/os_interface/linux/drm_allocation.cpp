@@ -62,6 +62,14 @@ GraphicsAllocation *DrmAllocation::createView(size_t offsetInParentAllocation, s
     return new DrmAllocation(this, offsetInParentAllocation, viewSize);
 }
 
+void DrmAllocation::setNoCpuAccessAsserted() {
+    for (auto &bo : this->bufferObjects) {
+        if (bo) {
+            bo->setNoCpuAccessAsserted();
+        }
+    }
+}
+
 DrmAllocation::~DrmAllocation() {
     [[maybe_unused]] int retCode;
     for (auto &memory : this->memoryToUnmap) {

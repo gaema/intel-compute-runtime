@@ -11,6 +11,8 @@ set(RUNTIME_SRCS_API
     ${CMAKE_CURRENT_SOURCE_DIR}/api.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/api.h
     ${CMAKE_CURRENT_SOURCE_DIR}/api_enter.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/cl_khr_command_buffer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cl_khr_command_buffer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/cl_types.h
     ${CMAKE_CURRENT_SOURCE_DIR}/dispatch.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/dispatch.h

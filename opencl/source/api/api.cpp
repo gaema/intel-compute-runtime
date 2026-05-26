@@ -5,6 +5,14 @@
  *
  */
 
+// cl_khr_command_buffer (still v0.9.7 / beta) types in CL/cl_ext.h are
+// guarded by CL_ENABLE_BETA_EXTENSIONS. Our extension implementation
+// uses those types via cl_khr_command_buffer.h below, so define BEFORE
+// the first CL header reaches the preprocessor.
+#ifndef CL_ENABLE_BETA_EXTENSIONS
+#define CL_ENABLE_BETA_EXTENSIONS
+#endif
+
 #include "api.h"
 
 #include "shared/source/aub/aub_center.h"
@@ -23,6 +31,7 @@
 
 #include "opencl/source/api/additional_extensions.h"
 #include "opencl/source/api/api_enter.h"
+#include "opencl/source/api/cl_khr_command_buffer.h"
 #include "opencl/source/cl_device/cl_device.h"
 #include "opencl/source/command_queue/command_queue.h"
 #include "opencl/source/context/context.h"
@@ -4796,6 +4805,18 @@ void *CL_API_CALL clGetExtensionFunctionAddress(const char *funcName) {
 
     RETURN_FUNC_PTR_IF_EXIST(clGetKernelSuggestedLocalWorkSize);
     RETURN_FUNC_PTR_IF_EXIST(clGetKernelSuggestedLocalWorkSizeKHR);
+
+    // cl_khr_command_buffer (record/replay)
+    RETURN_FUNC_PTR_IF_EXIST(clCreateCommandBufferKHR);
+    RETURN_FUNC_PTR_IF_EXIST(clRetainCommandBufferKHR);
+    RETURN_FUNC_PTR_IF_EXIST(clReleaseCommandBufferKHR);
+    RETURN_FUNC_PTR_IF_EXIST(clFinalizeCommandBufferKHR);
+    RETURN_FUNC_PTR_IF_EXIST(clEnqueueCommandBufferKHR);
+    RETURN_FUNC_PTR_IF_EXIST(clCommandNDRangeKernelKHR);
+    RETURN_FUNC_PTR_IF_EXIST(clGetCommandBufferInfoKHR);
+
+    // cl_khr_command_buffer_mutable_dispatch sub-extension
+    RETURN_FUNC_PTR_IF_EXIST(clUpdateMutableCommandsKHR);
 
     ret = getAdditionalExtensionFunctionAddress(funcName);
     TRACING_EXIT(ClGetExtensionFunctionAddress, &ret);

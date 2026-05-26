@@ -153,6 +153,7 @@ class IoctlHelperXe : public IoctlHelper {
     int bindAddDebugData(std::vector<VmBindOpExtDebugData> debugDataVec, uint32_t vmHandleId, VmBindExtUserFenceT *vmBindExtUserFence, bool isAdd) override;
     std::optional<std::vector<VmBindOpExtDebugData>> addDebugDataAndCreateBindOpVec(BufferObject *bo, uint32_t vmId, bool isAdd) override;
     virtual uint32_t getVmBindDecompressFlag() const;
+    uint64_t getVmBindNoCpuAccessFlag() const override;
     MOCKABLE_VIRTUAL void setNoVmOvercommitFlagAllowed(bool value) { this->noVmOvercommitFlagAllowed = value; }
     MOCKABLE_VIRTUAL bool getNoVmOvercommitFlagAllowed() { return noVmOvercommitFlagAllowed; }
     bool requireBoChunksForLargeHostPtrs() const override { return false; }

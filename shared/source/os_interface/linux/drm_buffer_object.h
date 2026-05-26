@@ -190,6 +190,12 @@ class BufferObject {
     void requireResourceDecompress(bool required) {
         requiresResourceDecompress = required;
     }
+    bool isNoCpuAccessAsserted() const {
+        return noCpuAccessAsserted;
+    }
+    void setNoCpuAccessAsserted() {
+        noCpuAccessAsserted = true;
+    }
 
     bool isExplicitResidencyRequired() {
         return requiresExplicitResidency;
@@ -340,6 +346,7 @@ class BufferObject {
     bool allowCapture = false;
     bool requiresImmediateBinding = false;
     bool requiresResourceDecompress = false;
+    bool noCpuAccessAsserted = false;
     bool requiresExplicitResidency = false;
     bool requiresLocked = false;
     bool chunked = false;

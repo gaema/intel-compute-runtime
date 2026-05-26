@@ -93,7 +93,9 @@ std::string CompilerProductHelperHw<gfxProduct>::getDeviceExtensions(const Hardw
                              "cl_khr_spirv_queries "
                              "cl_intel_unified_shared_memory "
                              "cl_ext_float_atomics "
-                             "cl_intel_kernel_allocations_info ";
+                             "cl_intel_kernel_allocations_info "
+                             "cl_khr_command_buffer "
+                             "cl_khr_command_buffer_mutable_dispatch ";
 
     auto supportsFp64 = hwInfo.capabilityTable.ftrSupportsFP64;
     if (debugManager.flags.OverrideDefaultFP64Settings.get() != -1) {

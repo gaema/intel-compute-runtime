@@ -1499,6 +1499,8 @@ void *MemoryManager::importFdHandle(Device *neoDevice,
     allocDataTmp->device = neoDevice;
     allocDataTmp->isImportedAllocation = true;
     alloc->setIsImported();
+    // fd-imported peer BOs are never CPU-mmapped by the importer.
+    alloc->setNoCpuAccessAsserted();
     allocDataTmp->setAllocId(++svmAllocsManager->allocationsCounter);
     if (uncachedBias) {
         allocDataTmp->allocationFlagsProperty.flags.locallyUncachedResource = 1;
@@ -1556,6 +1558,8 @@ void *MemoryManager::importFdHandles(Device *neoDevice,
     allocDataTmp->device = neoDevice;
     allocDataTmp->isImportedAllocation = true;
     alloc->setIsImported();
+    // fd-imported peer BOs are never CPU-mmapped by the importer.
+    alloc->setNoCpuAccessAsserted();
 
     allocDataTmp->setAllocId(++svmAllocsManager->allocationsCounter);
 

@@ -575,6 +575,14 @@ class GraphicsAllocation : public IDNode<GraphicsAllocation>, NEO::NonCopyableAn
         return allocationInfo.flags.isImported;
     }
 
+    /* Caller asserts the imported BO will not be CPU-mmaped on this driver
+     * instance. OS-specific overrides propagate this to the underlying BOs
+     * so the kernel side can opt out of cache-coherence safety checks for
+     * GPU<->GPU peer DMA. Default: no-op (the caller's assertion is
+     * recorded but has no effect for OSes that don't expose the contract).
+     */
+    virtual void setNoCpuAccessAsserted() {}
+
   protected:
     StackVec<uint32_t, 32> inspectionIds;
     StackVec<Gmm *, EngineLimits::maxHandleCount> gmms;

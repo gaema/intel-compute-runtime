@@ -28,7 +28,9 @@ void ProductHelper::setupPreemptionSurfaceSize(HardwareInfo &hwInfo, const RootD
 
     auto &gfxCoreHelper = rootDeviceEnvironment.getHelper<GfxCoreHelper>();
 
-    hwInfo.capabilityTable.requiredPreemptionSurfaceSize = hwInfo.gtSystemInfo.CsrSizeInMb * MemoryConstants::megaByte;
+    if (hwInfo.gtSystemInfo.CsrSizeInMb > 0) {
+        hwInfo.capabilityTable.requiredPreemptionSurfaceSize = hwInfo.gtSystemInfo.CsrSizeInMb * MemoryConstants::megaByte;
+    }
     gfxCoreHelper.adjustPreemptionSurfaceSize(hwInfo.capabilityTable.requiredPreemptionSurfaceSize, rootDeviceEnvironment);
 }
 

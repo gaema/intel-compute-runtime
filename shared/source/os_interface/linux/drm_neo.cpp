@@ -555,6 +555,8 @@ int Drm::setupHardwareInfo(uint32_t deviceId, bool setupFeatureTableAndWorkaroun
         auto numRegions = systemInfo->getNumRegions();
         if (numRegions > 0) {
             hwInfo->featureTable.regionCount = numRegions;
+        } else if (hwInfo->featureTable.regionCount == 0) {
+            hwInfo->featureTable.regionCount = 1; // B70 HWCONFIG omits key 83 (numRegions)
         }
 
         hwInfo->gtSystemInfo.NumThreadsPerEu = systemInfo->getNumThreadsPerEu();
@@ -1646,6 +1648,15 @@ int changeBufferObjectBinding(Drm *drm, OsContext *osContext, uint32_t vmHandleI
         }
         bool bindLock = bo->isExplicitLockedMemoryRequired();
         flags |= ioctlHelper->getFlagsForVmBind(bindCapture, bindImmediate, bindMakeResident, bindLock, readOnlyResource, decompressResource);
+        // BOs imported via a peer-DMA path assert the no-CPU-access contract
+        // so the kernel side allows non-coherent (XE_COH_NONE) PAT bind.
+        // i915 paths return 0 from this helper; only IoctlHelperXe sets the
+        // bit. Older kernels without the flag will reject vm_bind with EINVAL
+        // (no silent regression -- a kernel without the flag rejects the
+        // unknown bit before reaching the relaxation site).
+        if (bo->isNoCpuAccessAsserted()) {
+            flags |= ioctlHelper->getVmBindNoCpuAccessFlag();
+        }
     }
 
     auto &bindAddresses = bo->getColourAddresses();

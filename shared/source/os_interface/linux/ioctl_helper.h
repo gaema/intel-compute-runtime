@@ -148,6 +148,11 @@ class IoctlHelper {
     virtual uint32_t getDirectSubmissionFlag() = 0;
     virtual std::unique_ptr<uint8_t[]> prepareVmBindExt(const StackVec<uint32_t, 2> &bindExtHandles, uint64_t cookie) = 0;
     virtual uint64_t getFlagsForVmBind(bool bindCapture, bool bindImmediate, bool bindMakeResident, bool bindLockedMemory, bool readOnlyResource, bool resolveResource) = 0;
+    /* Returns the kernel flag bit that asserts the no-CPU-access contract on
+     * an imported BO bound with a non-coherent PAT. Default 0 (i915 path has
+     * no equivalent); IoctlHelperXe overrides to DRM_XE_VM_BIND_FLAG_NO_CPU_ACCESS.
+     */
+    virtual uint64_t getVmBindNoCpuAccessFlag() const { return 0; }
     virtual int queryDistances(std::vector<QueryItem> &queryItems, std::vector<DistanceInfo> &distanceInfos) = 0;
     virtual uint16_t getWaitUserFenceSoftFlag() = 0;
     virtual int execBuffer(ExecBuffer *execBuffer, uint64_t completionGpuAddress, TaskCountType counterValue) = 0;
