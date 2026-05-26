@@ -63,6 +63,7 @@ class DrmAllocation : public GraphicsAllocation {
     const BufferObjects &getBOs() const {
         return this->bufferObjects;
     }
+    void setNoCpuAccessAsserted() override;
     MOCKABLE_VIRTUAL BufferObject *&getBufferObjectToModify(uint32_t handleIndex) {
         return bufferObjects[handleIndex];
     }

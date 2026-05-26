@@ -12,4 +12,7 @@ namespace NEO {
 uint32_t IoctlHelperXe::getVmBindDecompressFlag() const {
     return DRM_XE_VM_BIND_FLAG_DECOMPRESS;
 }
+uint64_t IoctlHelperXe::getVmBindNoCpuAccessFlag() const {
+    return DRM_XE_VM_BIND_FLAG_NO_CPU_ACCESS;
+}
 } // namespace NEO

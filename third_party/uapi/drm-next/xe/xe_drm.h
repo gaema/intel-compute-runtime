@@ -1178,6 +1178,7 @@ struct drm_xe_vm_bind_op {
 #define DRM_XE_VM_BIND_FLAG_CPU_ADDR_MIRROR	(1 << 5)
 #define DRM_XE_VM_BIND_FLAG_MADVISE_AUTORESET	(1 << 6)
 #define DRM_XE_VM_BIND_FLAG_DECOMPRESS (1 << 7)
+#define DRM_XE_VM_BIND_FLAG_NO_CPU_ACCESS (1 << 8)
 	/** @flags: Bind flags */
 	__u32 flags;
 

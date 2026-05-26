@@ -23,6 +23,9 @@
 
 #include "encode_dispatch_kernel_args_ext.h"
 
+#include <cstdio>
+#include <cstdlib>
+
 namespace NEO {
 
 template <typename GfxFamily>
@@ -132,6 +135,16 @@ inline void HardwareInterface<GfxFamily>::programWalker(
     GpgpuWalkerHelper<GfxFamily>::template setGpgpuWalkerThreadData<WalkerType>(&walkerCmd, kernelInfo.kernelDescriptor, startWorkGroups,
                                                                                 numWorkGroups, walkerArgs.localWorkSizes, simd, dim,
                                                                                 localIdsGenerationByRuntime, inlineDataProgrammingRequired, requiredWalkOrder);
+    {
+        static const char *dbg = std::getenv("CL_CMDBUF_DEBUG");
+        if (dbg && dbg[0] == '1') {
+            fprintf(stderr, "[NEO-WALKER] name=%s dim=%u numWG=[%zu,%zu,%zu] lws=[%zu,%zu,%zu] gws=[%zu,%zu,%zu]\n",
+                    kernelInfo.kernelDescriptor.kernelMetadata.kernelName.c_str(),
+                    dim, numWorkGroups[0], numWorkGroups[1], numWorkGroups[2],
+                    walkerArgs.localWorkSizes[0], walkerArgs.localWorkSizes[1], walkerArgs.localWorkSizes[2],
+                    walkerArgs.globalWorkSizes[0], walkerArgs.globalWorkSizes[1], walkerArgs.globalWorkSizes[2]);
+        }
+    }
 
     auto requiredScratchSlot0Size = queueCsr.getRequiredScratchSlot0Size();
     auto requiredScratchSlot1Size = queueCsr.getRequiredScratchSlot1Size();

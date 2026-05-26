@@ -196,6 +196,23 @@ if(UNIX)
 
   set(CPACK_DEBIAN_LEVEL-ZERO-GPU_PACKAGE_SUGGESTS "level-zero")
 
+  # Use Intel's current package naming so our build directly replaces
+  # the Intel apt packages instead of conflicting with them.
+  # Intel's libze-intel-gpu1 declares Breaks/Replaces: intel-level-zero-gpu;
+  # renaming ours to libze-intel-gpu1 makes dpkg treat them as the same package.
+  set(CPACK_DEBIAN_LEVEL-ZERO-GPU_PACKAGE_NAME "libze-intel-gpu1")
+  set(CPACK_DEBIAN_LEVEL-ZERO-GPU_PACKAGE_REPLACES "intel-level-zero-gpu")
+  set(CPACK_DEBIAN_LEVEL-ZERO-GPU_PACKAGE_CONFLICTS "intel-level-zero-gpu")
+  set(CPACK_DEBIAN_LEVEL-ZERO-GPU_PACKAGE_PROVIDES "intel-level-zero-gpu")
+
+  # intel-opencl-icd is Intel's current name; intel-opencl is the old name
+  # that intel-opencl-icd declares Breaks on.
+  set(CPACK_DEBIAN_OPENCL_PACKAGE_NAME "intel-opencl-icd")
+  set(CPACK_DEBIAN_OPENCL_FILE_NAME "intel-opencl-icd_${NEO_OCL_VERSION_MAJOR}.${NEO_OCL_VERSION_MINOR}.${NEO_VERSION_BUILD}-1~${os_codename}_${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}.deb")
+  set(CPACK_DEBIAN_OPENCL_PACKAGE_REPLACES "intel-opencl")
+  set(CPACK_DEBIAN_OPENCL_PACKAGE_CONFLICTS "intel-opencl")
+  set(CPACK_DEBIAN_OPENCL_PACKAGE_PROVIDES "intel-opencl")
+
   set(CPACK_PROPERTIES_FILE "${CMAKE_CURRENT_SOURCE_DIR}/package_config.cmake")
   set(CPACK_LD_LIBRARY_PATH "${NEO__GMM_LIBRARY_PATH}")
   include(CPack)

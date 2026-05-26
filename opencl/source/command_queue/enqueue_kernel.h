@@ -13,6 +13,8 @@
 #include "opencl/source/command_queue/command_queue_hw.h"
 #include "opencl/source/command_queue/gpgpu_walker.h"
 
+#include <cstdio>
+#include <cstdlib>
 #include <new>
 
 namespace NEO {
@@ -121,6 +123,18 @@ cl_int CommandQueueHw<GfxFamily>::enqueueKernel(
             ", LWS: ", localWorkSizeIn ? localWorkSizeIn[0] : 0, ", ", localWorkSizeIn ? localWorkSizeIn[1] : 0, ", ", localWorkSizeIn ? localWorkSizeIn[2] : 0,
             ", GWS: ", globalWorkSizeIn[0], ", ", globalWorkSizeIn[1], ", ", globalWorkSizeIn[2],
             ", SIMD: ", kernelInfo.getMaxSimdSize());
+    {
+        static const char *dbg = std::getenv("CL_CMDBUF_DEBUG");
+        if (dbg && dbg[0] == '1') {
+            fprintf(stderr, "[NEO-ENQKERN] name=%s workDim=%u region=[%zu,%zu,%zu] lwsIn=%s lwsPass=[%zu,%zu,%zu]\n",
+                    kernelInfo.kernelDescriptor.kernelMetadata.kernelName.c_str(),
+                    workDim, region[0], region[1], region[2],
+                    localWorkSizeIn ? "yes" : "no",
+                    localWkgSizeToPass ? localWkgSizeToPass[0] : 0,
+                    localWkgSizeToPass ? localWkgSizeToPass[1] : 0,
+                    localWkgSizeToPass ? localWkgSizeToPass[2] : 0);
+        }
+    }
 
     if (totalWorkItems > kernel.getMaxKernelWorkGroupSize()) {
         return CL_INVALID_WORK_GROUP_SIZE;
