@@ -2643,6 +2643,16 @@ ze_result_t CommandListCoreFamily<gfxCoreFamily>::appendMemoryPrefetch(const voi
         }
     }
 
+    auto memoryManager = device->getDriverHandle()->getMemoryManager();
+    if (allocData->memoryType == InternalMemoryType::deviceUnifiedMemory &&
+        memoryManager->isKmdMigrationAvailable(device->getNEODevice()->getRootDeviceIndex())) {
+        this->performMemoryPrefetch = true;
+        auto prefetchManager = memoryManager->getPrefetchManager();
+        if (prefetchManager) {
+            prefetchManager->insertAllocation(this->prefetchContext, *device->getDriverHandle()->getSvmAllocsManager(), *device->getNEODevice(), ptr, size);
+        }
+    }
+
     return ZE_RESULT_SUCCESS;
 }
 

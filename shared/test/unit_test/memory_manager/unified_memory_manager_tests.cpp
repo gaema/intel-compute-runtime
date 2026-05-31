@@ -279,7 +279,7 @@ TEST_F(SVMLocalMemoryAllocatorTest, givenNonKmdMigratedSharedAllocationWhenPrefe
     svmManager->freeSVMAlloc(ptr);
 }
 
-TEST_F(SVMLocalMemoryAllocatorTest, givenNonSharedUnifiedMemoryAllocationWhenPrefetchMemoryIsCalledThenSetMemPrefetchNotCalled) {
+TEST_F(SVMLocalMemoryAllocatorTest, givenKmdMigratedDeviceUnifiedMemoryAllocationWhenPrefetchMemoryIsCalledForMultipleActivePartitionsThenPrefetchAllocationToSubDevices) {
     DebugManagerStateRestore restore;
     debugManager.flags.UseKmdMigration.set(1);
 
@@ -297,6 +297,39 @@ TEST_F(SVMLocalMemoryAllocatorTest, givenNonSharedUnifiedMemoryAllocationWhenPre
 
     auto svmData = svmManager->getSVMAlloc(ptr);
     svmData->memoryType = InternalMemoryType::deviceUnifiedMemory;
+
+    csr->setActivePartitions(2);
+    svmManager->prefetchMemory(*device, *csr, ptr, 4096);
+
+    auto mockMemoryManager = static_cast<MockMemoryManager *>(device->getMemoryManager());
+    EXPECT_TRUE(mockMemoryManager->setMemPrefetchCalled);
+    EXPECT_EQ(2u, mockMemoryManager->memPrefetchSubDeviceIds.size());
+
+    for (auto index = 0u; index < mockMemoryManager->memPrefetchSubDeviceIds.size(); index++) {
+        EXPECT_EQ(index, mockMemoryManager->memPrefetchSubDeviceIds[index]);
+    }
+
+    svmManager->freeSVMAlloc(ptr);
+}
+
+TEST_F(SVMLocalMemoryAllocatorTest, givenHostUnifiedMemoryAllocationWhenPrefetchMemoryIsCalledThenSetMemPrefetchNotCalled) {
+    DebugManagerStateRestore restore;
+    debugManager.flags.UseKmdMigration.set(1);
+
+    std::unique_ptr<UltDeviceFactory> deviceFactory(new UltDeviceFactory(1, 2));
+    auto device = deviceFactory->rootDevices[0];
+    auto svmManager = std::make_unique<MockSVMAllocsManager>(device->getMemoryManager());
+    auto csr = std::make_unique<MockCommandStreamReceiver>(*device->getExecutionEnvironment(), device->getRootDeviceIndex(), device->getDeviceBitfield());
+    csr->setupContext(*device->getDefaultEngine().osContext);
+    void *cmdQ = reinterpret_cast<void *>(0x12345);
+
+    UnifiedMemoryProperties unifiedMemoryProperties(InternalMemoryType::sharedUnifiedMemory, 1, rootDeviceIndices, deviceBitfields);
+
+    auto ptr = svmManager->createSharedUnifiedMemoryAllocation(4096, unifiedMemoryProperties, &cmdQ);
+    EXPECT_NE(nullptr, ptr);
+
+    auto svmData = svmManager->getSVMAlloc(ptr);
+    svmData->memoryType = InternalMemoryType::hostUnifiedMemory;
 
     csr->setActivePartitions(2);
     svmManager->prefetchMemory(*device, *csr, ptr, 4096);

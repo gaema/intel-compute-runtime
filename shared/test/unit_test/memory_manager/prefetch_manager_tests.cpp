@@ -69,7 +69,7 @@ TEST(PrefetchManagerTests, givenPrefetchManagerWhenCallingInterfaceFunctionsThen
     free(ptr2);
 }
 
-TEST(PrefetchManagerTests, givenPrefetchManagerWhenCallingInterfaceFunctionsThenNoUpdateAllocationsInPrefetchContextForInvalidAllocations) {
+TEST(PrefetchManagerTests, givenPrefetchManagerWhenCallingInterfaceFunctionsThenUpdateAllocationsInPrefetchContextForDeviceUnifiedMemory) {
     std::unique_ptr<UltDeviceFactory> deviceFactory(new UltDeviceFactory(1, 1));
     RootDeviceIndicesContainer rootDeviceIndices = {mockRootDeviceIndex};
     std::map<uint32_t, DeviceBitfield> deviceBitfields{{mockRootDeviceIndex, mockDeviceBitfield}};
@@ -93,9 +93,12 @@ TEST(PrefetchManagerTests, givenPrefetchManagerWhenCallingInterfaceFunctionsThen
     EXPECT_EQ(0u, prefetchContext.allocations.size());
 
     prefetchManager->insertAllocation(prefetchContext, *svmManager.get(), *device, ptr, 4096);
-    EXPECT_EQ(0u, prefetchContext.allocations.size());
+    EXPECT_EQ(1u, prefetchContext.allocations.size());
 
     prefetchManager->migrateAllocationsToGpu(prefetchContext, *svmManager.get(), *device, *csr.get());
+    EXPECT_EQ(1u, prefetchContext.allocations.size());
+
+    prefetchManager->removeAllocations(prefetchContext);
     EXPECT_EQ(0u, prefetchContext.allocations.size());
 
     svmManager->freeSVMAlloc(ptr);

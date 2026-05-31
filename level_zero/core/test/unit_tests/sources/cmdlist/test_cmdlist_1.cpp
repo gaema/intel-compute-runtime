@@ -17,6 +17,7 @@
 #include "shared/test/common/helpers/stream_capture.h"
 #include "shared/test/common/helpers/unit_test_helper.h"
 #include "shared/test/common/libult/ult_command_stream_receiver.h"
+#include "shared/test/common/memory_manager/mock_prefetch_manager.h"
 #include "shared/test/common/mocks/mock_command_stream_receiver.h"
 #include "shared/test/common/mocks/mock_cpu_page_fault_manager.h"
 #include "shared/test/common/mocks/mock_direct_submission_hw.h"
@@ -1248,6 +1249,76 @@ TEST_F(CommandListCreateTests, givenValidPtrThenAppendMemoryPrefetchReturnsSucce
 
     res = commandList->appendMemoryPrefetch(ptr, size);
     EXPECT_EQ(ZE_RESULT_SUCCESS, res);
+
+    res = context->freeMem(ptr);
+    ASSERT_EQ(res, ZE_RESULT_SUCCESS);
+}
+
+TEST_F(CommandListCreateTests, givenDeviceUnifiedMemoryWithKmdMigrationWhenAppendMemoryPrefetchIsCalledThenPrefetchIsRequestedAndAllocationIsInsertedIntoPrefetchContext) {
+    DebugManagerStateRestore restore;
+    debugManager.flags.UseKmdMigration.set(1);
+
+    auto memoryManager = static_cast<MockMemoryManager *>(device->getDriverHandle()->getMemoryManager());
+    memoryManager->prefetchManager.reset(new MockPrefetchManager());
+
+    size_t size = 4096;
+    size_t alignment = 1u;
+    void *ptr = nullptr;
+
+    ze_device_mem_alloc_desc_t deviceDesc = {};
+    auto res = context->allocDeviceMem(device->toHandle(),
+                                       &deviceDesc,
+                                       size, alignment, &ptr);
+    EXPECT_EQ(ZE_RESULT_SUCCESS, res);
+    EXPECT_NE(nullptr, ptr);
+
+    auto pCommandList = std::make_unique<WhiteBox<::L0::CommandListCoreFamily<FamilyType::gfxCoreFamily>>>();
+    res = pCommandList->initialize(device, NEO::EngineGroupType::renderCompute, 0u);
+    ASSERT_EQ(ZE_RESULT_SUCCESS, res);
+
+    EXPECT_FALSE(pCommandList->isMemoryPrefetchRequested());
+    EXPECT_EQ(0u, pCommandList->getPrefetchContext().allocations.size());
+
+    res = pCommandList->appendMemoryPrefetch(ptr, size);
+    EXPECT_EQ(ZE_RESULT_SUCCESS, res);
+
+    EXPECT_TRUE(pCommandList->isMemoryPrefetchRequested());
+    EXPECT_EQ(1u, pCommandList->getPrefetchContext().allocations.size());
+    EXPECT_EQ(ptr, pCommandList->getPrefetchContext().allocations.front().ptr);
+    EXPECT_EQ(size, pCommandList->getPrefetchContext().allocations.front().size);
+
+    res = context->freeMem(ptr);
+    ASSERT_EQ(res, ZE_RESULT_SUCCESS);
+}
+
+TEST_F(CommandListCreateTests, givenDeviceUnifiedMemoryWithoutKmdMigrationWhenAppendMemoryPrefetchIsCalledThenPrefetchIsNotRequested) {
+    DebugManagerStateRestore restore;
+    debugManager.flags.UseKmdMigration.set(0);
+    debugManager.flags.AppendMemoryPrefetchForKmdMigratedSharedAllocations.set(0);
+
+    auto memoryManager = static_cast<MockMemoryManager *>(device->getDriverHandle()->getMemoryManager());
+    memoryManager->prefetchManager.reset(new MockPrefetchManager());
+
+    size_t size = 4096;
+    size_t alignment = 1u;
+    void *ptr = nullptr;
+
+    ze_device_mem_alloc_desc_t deviceDesc = {};
+    auto res = context->allocDeviceMem(device->toHandle(),
+                                       &deviceDesc,
+                                       size, alignment, &ptr);
+    EXPECT_EQ(ZE_RESULT_SUCCESS, res);
+    EXPECT_NE(nullptr, ptr);
+
+    auto pCommandList = std::make_unique<WhiteBox<::L0::CommandListCoreFamily<FamilyType::gfxCoreFamily>>>();
+    res = pCommandList->initialize(device, NEO::EngineGroupType::renderCompute, 0u);
+    ASSERT_EQ(ZE_RESULT_SUCCESS, res);
+
+    res = pCommandList->appendMemoryPrefetch(ptr, size);
+    EXPECT_EQ(ZE_RESULT_SUCCESS, res);
+
+    EXPECT_FALSE(pCommandList->isMemoryPrefetchRequested());
+    EXPECT_EQ(0u, pCommandList->getPrefetchContext().allocations.size());
 
     res = context->freeMem(ptr);
     ASSERT_EQ(res, ZE_RESULT_SUCCESS);
