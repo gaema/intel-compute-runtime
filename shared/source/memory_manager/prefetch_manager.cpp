@@ -23,7 +23,8 @@ void PrefetchManager::insertAllocation(PrefetchContext &context, SVMAllocsManage
         if (device.areSharedSystemAllocationsAllowed()) {
             context.allocations.push_back({usmPtr, size});
         }
-    } else if (allocData->memoryType == InternalMemoryType::sharedUnifiedMemory) {
+    } else if (allocData->memoryType == InternalMemoryType::sharedUnifiedMemory ||
+               allocData->memoryType == InternalMemoryType::deviceUnifiedMemory) {
         context.allocations.push_back({usmPtr, size});
     }
 }

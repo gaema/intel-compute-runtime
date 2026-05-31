@@ -1308,8 +1308,9 @@ void SVMAllocsManager::prefetchMemory(Device &device, CommandStreamReceiver &com
         return;
     }
 
-    if ((memoryManager->isKmdMigrationAvailable(device.getRootDeviceIndex()) &&
-         (svmData->memoryType == InternalMemoryType::sharedUnifiedMemory))) {
+    if (memoryManager->isKmdMigrationAvailable(device.getRootDeviceIndex()) &&
+        (svmData->memoryType == InternalMemoryType::sharedUnifiedMemory ||
+         svmData->memoryType == InternalMemoryType::deviceUnifiedMemory)) {
         auto gfxAllocation = svmData->gpuAllocations.getGraphicsAllocation(device.getRootDeviceIndex());
         auto subDeviceIds = commandStreamReceiver.getActivePartitions() > 1 ? getSubDeviceIds(commandStreamReceiver) : SubDeviceIdsVec{getSubDeviceId(device)};
         memoryManager->setMemPrefetch(gfxAllocation, subDeviceIds, device.getRootDeviceIndex());
