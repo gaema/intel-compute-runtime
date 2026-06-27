@@ -1669,6 +1669,17 @@ void DrmMemoryManager::freeGraphicsMemoryImpl(GraphicsAllocation *gfxAllocation,
         }
         if (isImported == false) {
             closeSharedHandle(gfxAllocation);
+        } else {
+            // LOCAL-MOD (gaema, dma-buf fd leak fix): an fd-imported IPC allocation
+            // (zeMemOpenIpcHandle path) holds the prime/dma-buf fd in
+            // DrmAllocation::sharedHandle. bo->close() above only issues GEM_CLOSE on
+            // the kernel GEM handle returned by PRIME_FD_TO_HANDLE; the prime fd itself
+            // is a process fd that NEO opened/owns (pidfd_getfd dup, socket recv, or the
+            // caller's fd whose ownership transfers to L0 on open per the L0 IPC
+            // contract). Upstream skipped closeSharedHandle() for imports, so that fd
+            // was never closed -> one leaked /dmabuf: fd per import, exhausting the
+            // ulimit. Close it here, matching the export-side closeSharedHandle().
+            closeSharedHandle(gfxAllocation);
         }
     }
 
