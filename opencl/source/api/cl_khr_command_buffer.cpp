@@ -687,12 +687,13 @@ clGetCommandBufferInfoKHR(cl_command_buffer_khr commandBuffer,
     // Minimal info support: state + queue list (subset of spec).
     switch (paramName) {
     case CL_COMMAND_BUFFER_STATE_KHR: {
-        cl_command_buffer_state_khr s = CL_COMMAND_BUFFER_STATE_PENDING_KHR;
+        // Upstream cl_ext.h dropped PENDING_KHR (was 2); FINALIZED_KHR now there.
+        cl_command_buffer_state_khr s = CL_COMMAND_BUFFER_STATE_EXECUTABLE_KHR;
         switch (cb->getState()) {
         case NEO::ClCommandBufferState::recording:       s = CL_COMMAND_BUFFER_STATE_RECORDING_KHR; break;
         case NEO::ClCommandBufferState::executable:      s = CL_COMMAND_BUFFER_STATE_EXECUTABLE_KHR; break;
         case NEO::ClCommandBufferState::pending:
-        case NEO::ClCommandBufferState::invalidInternal: s = CL_COMMAND_BUFFER_STATE_PENDING_KHR; break;
+        case NEO::ClCommandBufferState::invalidInternal: s = CL_COMMAND_BUFFER_STATE_FINALIZED_KHR; break;
         }
         if (paramValueSizeRet) *paramValueSizeRet = sizeof(s);
         if (paramValue) {
