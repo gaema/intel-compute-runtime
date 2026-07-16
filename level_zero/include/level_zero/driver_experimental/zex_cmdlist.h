@@ -54,6 +54,7 @@ zexCommandListAppendWriteToMemory(
 
 typedef void(ZE_CALLBACK *ze_host_function_callback_t)(void *pUserData);
 
+#if 0 /* promoted to ze_api.h — avoid redecl */
 ze_result_t ZE_APICALL
 zeCommandListAppendHostFunction(
     ze_command_list_handle_t hCommandList,     ///< [in] handle of the command list
@@ -63,6 +64,8 @@ zeCommandListAppendHostFunction(
     ze_event_handle_t hSignalEvent,            ///< [in][optional] handle of the event to signal on completion
     uint32_t numWaitEvents,                    ///< [in][optional] number of events to wait on before launching
     ze_event_handle_t *phWaitEvents);          ///< [in][optional][range(0, numWaitEvents)] handle of the events to wait on before launching
+
+#endif
 
 ze_result_t ZE_APICALL
 zexCommandListAppendMemoryCopyWithParameters(
