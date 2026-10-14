@@ -632,6 +632,12 @@ WaitStatus CommandStreamReceiver::waitForCompletionWithTimeout(const WaitParams 
 }
 
 bool CommandStreamReceiver::checkGpuHangDetected(TimeType currentTime, TimeType &lastHangCheckTime) const {
+    // A context already found hung stays hung: answer at once instead of waiting out another
+    // gpuHangCheckPeriod. Without this, teardown after a hang waited one period per freed
+    // allocation (59 s on an A370M after an xe VM kill).
+    if (this->osContext && this->osContext->isHangDetected()) {
+        return true;
+    }
     std::chrono::microseconds elapsedTimeSinceGpuHangCheck = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - lastHangCheckTime);
 
     if (elapsedTimeSinceGpuHangCheck.count() >= gpuHangCheckPeriod.count()) {

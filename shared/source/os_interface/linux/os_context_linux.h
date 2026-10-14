@@ -37,7 +37,7 @@ class OsContextLinux : public OsContext {
     void setHangDetected() {
         contextHangDetected = true;
     }
-    bool isHangDetected() const {
+    bool isHangDetected() const override {
         return contextHangDetected;
     }
 

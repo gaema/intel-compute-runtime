@@ -33,6 +33,8 @@ class OsContext : public ReferenceTrackedObject<OsContext> {
 
     uint32_t getContextId() const { return contextId; }
     virtual OsContextLinux *asOsContextLinux() { return nullptr; }
+    // Sticky: true once a reset-status check has found this context hung (see OsContextLinux).
+    virtual bool isHangDetected() const { return false; }
     virtual uint64_t getOfflineDumpContextId(uint32_t deviceIndex) const { return 0; };
     uint32_t getNumSupportedDevices() const { return numSupportedDevices; }
     DeviceBitfield getDeviceBitfield() const { return deviceBitfield; }

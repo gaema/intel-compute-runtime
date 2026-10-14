@@ -1355,7 +1355,11 @@ int IoctlHelperXe::getResetStats(ResetStats &resetStats, uint32_t *status, OsCon
 
     auto banned = false;
 
-    const auto retVal = ioctl(DrmIoctl::getResetStats, &getProperty);
+    // getProperty is already the xe struct, so it goes to the base (pass-through) ioctl. The
+    // IoctlHelperXe::ioctl getResetStats case reads its argument as a ResetStats and would build a
+    // second struct from resetStats->contextId -- here the low half of `extensions`, 0 -- so every
+    // query asked for exec queue 0 (ids start at 1), failed ENOENT, and no ban was ever seen.
+    const auto retVal = IoctlHelper::ioctl(DrmIoctl::getResetStats, &getProperty);
     if (retVal == 0) {
         banned = (getProperty.value != 0);
         resetStats.batchActive = banned ? 1 : 0;
